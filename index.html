@@ -2,26 +2,21 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Sanal Çiftlik V2</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sanal Çiftlik Final</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 </head>
-<body>
-
-    <a-scene 
-        vr-mode-ui="enabled: false" 
-        ar-mode-ui="enabled: true"
-        webxr="optionalFeatures: hit-test, dom-overlay; overlayElement:#overlay">
+<body style="margin: 0; overflow: hidden;">
+    
+    <a-scene embedded arjs>
         
-        <a-box position="0 0 -3" 
-               rotation="0 45 0" 
-               color="red" 
+        <a-box position="0 0.5 0" 
+               material="color: red;" 
                scale="0.5 0.5 0.5">
         </a-box>
-
-        <a-sky color="#ECECEC" hide-on-enter-ar></a-sky>
-
+        
+        <a-entity camera></a-entity>
+        
     </a-scene>
-
 </body>
 </html>
