@@ -1,104 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
     <meta charset="utf-8">
-    <title>Sanal Çiftlik - Gerçek AR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gerçek AR Çiftlik</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     
+    <style>
+        /* Başlatma Butonu Tasarımı */
+        #ar-baslat-butonu {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            background-color: #e91e63; /* Pembe renk */
+            color: white;
+            font-family: sans-serif;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 30px;
+            border: none;
+            z-index: 9999;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: block; /* Başlangıçta görünür */
+        }
+    </style>
+
     <script>
-        // 1. ÇİFTLİĞİ YERLEŞTİRME SİSTEMİ
-        AFRAME.registerComponent('ar-yerlestirici', {
+        // TIKLAMA VE YERLEŞTİRME MANTIĞI
+        AFRAME.registerComponent('ar-kontrol', {
             init: function () {
                 this.reticle = document.querySelector("#hedef-halkasi");
-                this.farm = document.querySelector("#ciftlik-alani");
-                this.isVisible = false;
+                this.farm = document.querySelector("#ciftlik-modeli");
+                this.placed = false;
 
-                // Ekrana tıklandığında çalışır
-                this.el.sceneEl.addEventListener('click', (e) => {
-                    if (!this.isVisible && this.reticle.object3D.visible) {
-                        // 1. Çiftliği halkanın olduğu yere taşı
+                // Ekrana dokunulunca çalışır
+                this.el.sceneEl.addEventListener('click', (event) => {
+                    // Eğer henüz yerleştirilmediyse ve halka görünürse
+                    if (!this.placed && this.reticle.object3D.visible) {
+                        // 1. Çiftliği halkanın olduğu yere koy
                         this.farm.setAttribute('position', this.reticle.getAttribute('position'));
                         this.farm.setAttribute('rotation', this.reticle.getAttribute('rotation'));
                         
                         // 2. Çiftliği görünür yap
                         this.farm.setAttribute('visible', 'true');
-                        this.isVisible = true;
                         
-                        // 3. Halkayı gizle (artık işimiz bitti)
+                        // 3. Halkayı yok et
                         this.reticle.setAttribute('visible', 'false');
+                        this.placed = true;
                     }
                 });
-                
-                // Zemin algılandığında halkayı göster
-                this.el.sceneEl.addEventListener('ar-hit-test-start', () => {
-                    // Tarama başladı
-                });
-            },
-            tick: function () {
-                // Eğer çiftlik henüz kurulmadıysa halkayı zemine yapıştır
-                if (!this.isVisible && this.reticle) {
-                    // Bu kısım WebXR tarafından otomatik yönetilir (hit-test)
-                }
             }
         });
 
-        // 2. ETKİLEŞİM: KAPIYI AÇIP KAPATMA
-        AFRAME.registerComponent('kapi-kontrol', {
-            init: function () {
-                this.acik = false;
-                this.el.addEventListener('click', () => {
-                    if (this.acik) {
-                        this.el.setAttribute('rotation', '0 0 0'); // Kapat
-                    } else {
-                        this.el.setAttribute('rotation', '0 -90 0'); // Aç
-                    }
-                    this.acik = !this.acik;
-                });
-            }
-        });
+        // AR BAŞLATMA BUTONU FONKSİYONU
+        function arBaslat() {
+            var scene = document.querySelector('a-scene');
+            var button = document.querySelector('#ar-baslat-butonu');
+            
+            // WebXR AR oturumunu başlat
+            scene.enterVR(); 
+            button.style.display = 'none'; // Butonu gizle
+        }
     </script>
 </head>
-<body>
+<body style="margin: 0; overflow: hidden;">
 
-    <a-scene webxr="optionalFeatures: hit-test, dom-overlay; overlayElement:#overlay" 
-             ar-yerlestirici
-             renderer="alpha: true" 
-             background="color: transparent">
+    <button id="ar-baslat-butonu" onclick="arBaslat()">KAMERAYI AÇ 📷</button>
 
-        <a-light type="directional" position="-1 2 1" intensity="1"></a-light>
+    <a-scene 
+        webxr="optionalFeatures: hit-test, dom-overlay; overlayElement: #ar-baslat-butonu"
+        vr-mode-ui="enabled: false"
+        ar-mode-ui="enabled: true"
+        renderer="alpha: true; antialias: true; colorManagement: true;"
+        ar-kontrol
+        background="color: transparent"> <a-light type="directional" position="0 5 0" intensity="1"></a-light>
         <a-light type="ambient" intensity="0.5"></a-light>
 
         <a-entity id="hedef-halkasi" ar-hit-test-target visible="false">
             <a-ring color="white" rotation="-90 0 0" radius-inner="0.1" radius-outer="0.15"></a-ring>
-            <a-circle color="white" rotation="-90 0 0" radius="0.05"></a-circle>
         </a-entity>
 
-        <a-entity id="ciftlik-alani" visible="false" position="0 0 -2">
+        <a-entity id="ciftlik-modeli" visible="false" position="0 0 -1">
             
-            <a-plane rotation="-90 0 0" width="3" height="3" color="#4CAF50" shadow></a-plane>
+            <a-plane rotation="-90 0 0" width="2" height="2" color="#4CAF50" shadow></a-plane>
 
-            <a-box position="-0.5 0.5 0" color="#D32F2F" scale="1 1 1" shadow></a-box>
+            <a-box position="-0.5 0.25 0" scale="0.5 0.5 0.5" color="red" shadow></a-box>
             
-            <a-entity position="-0.5 0 0.51"> <a-box class="clickable" 
-                       kapi-kontrol
-                       position="0.25 0.4 0" 
-                       scale="0.4 0.8 0.05" 
-                       color="#5D4037">
-                </a-box>
-            </a-entity>
-
-            <a-cylinder position="1 0.75 0" radius="0.1" height="1.5" color="#795548" shadow></a-cylinder>
-            <a-sphere position="1 1.5 0" radius="0.6" color="#388E3C" shadow></a-sphere>
+            <a-cylinder position="0.5 0.3 0" radius="0.05" height="0.6" color="#5D4037"></a-cylinder>
+            <a-dodecahedron position="0.5 0.8 0" radius="0.25" color="green"></a-dodecahedron>
 
         </a-entity>
 
         <a-entity ar-hit-test="target:#hedef-halkasi; type:map"></a-entity>
-        
-        <a-entity cursor="fuse: false; rayOrigin: mouse" raycaster="objects: .clickable"></a-entity>
 
     </a-scene>
-    
-    <div id="overlay"></div>
-
 </body>
-            </html>
+</html>
