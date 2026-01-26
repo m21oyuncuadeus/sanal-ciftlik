@@ -2,36 +2,103 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Sanal Çiftlik - Gerçek Zemin</title>
+    <title>Sanal Çiftlik - Gerçek AR</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    
+    <script>
+        // 1. ÇİFTLİĞİ YERLEŞTİRME SİSTEMİ
+        AFRAME.registerComponent('ar-yerlestirici', {
+            init: function () {
+                this.reticle = document.querySelector("#hedef-halkasi");
+                this.farm = document.querySelector("#ciftlik-alani");
+                this.isVisible = false;
+
+                // Ekrana tıklandığında çalışır
+                this.el.sceneEl.addEventListener('click', (e) => {
+                    if (!this.isVisible && this.reticle.object3D.visible) {
+                        // 1. Çiftliği halkanın olduğu yere taşı
+                        this.farm.setAttribute('position', this.reticle.getAttribute('position'));
+                        this.farm.setAttribute('rotation', this.reticle.getAttribute('rotation'));
+                        
+                        // 2. Çiftliği görünür yap
+                        this.farm.setAttribute('visible', 'true');
+                        this.isVisible = true;
+                        
+                        // 3. Halkayı gizle (artık işimiz bitti)
+                        this.reticle.setAttribute('visible', 'false');
+                    }
+                });
+                
+                // Zemin algılandığında halkayı göster
+                this.el.sceneEl.addEventListener('ar-hit-test-start', () => {
+                    // Tarama başladı
+                });
+            },
+            tick: function () {
+                // Eğer çiftlik henüz kurulmadıysa halkayı zemine yapıştır
+                if (!this.isVisible && this.reticle) {
+                    // Bu kısım WebXR tarafından otomatik yönetilir (hit-test)
+                }
+            }
+        });
+
+        // 2. ETKİLEŞİM: KAPIYI AÇIP KAPATMA
+        AFRAME.registerComponent('kapi-kontrol', {
+            init: function () {
+                this.acik = false;
+                this.el.addEventListener('click', () => {
+                    if (this.acik) {
+                        this.el.setAttribute('rotation', '0 0 0'); // Kapat
+                    } else {
+                        this.el.setAttribute('rotation', '0 -90 0'); // Aç
+                    }
+                    this.acik = !this.acik;
+                });
+            }
+        });
+    </script>
 </head>
 <body>
 
-    <a-scene webxr="optionalFeatures: hit-test, dom-overlay; overlayElement:#overlay">
+    <a-scene webxr="optionalFeatures: hit-test, dom-overlay; overlayElement:#overlay" 
+             ar-yerlestirici
+             renderer="alpha: true" 
+             background="color: transparent">
 
-        <a-light type="directional" position="1 1 1" intensity="1"></a-light>
+        <a-light type="directional" position="-1 2 1" intensity="1"></a-light>
         <a-light type="ambient" intensity="0.5"></a-light>
 
-        <a-box position="0 0.5 -2" 
-               color="#D32F2F" 
-               scale="0.5 0.5 0.5"
-               shadow>
-        </a-box>
+        <a-entity id="hedef-halkasi" ar-hit-test-target visible="false">
+            <a-ring color="white" rotation="-90 0 0" radius-inner="0.1" radius-outer="0.15"></a-ring>
+            <a-circle color="white" rotation="-90 0 0" radius="0.05"></a-circle>
+        </a-entity>
 
-        <a-cylinder position="1 0.75 -2" 
-                    radius="0.1" height="1.5" 
-                    color="#795548" shadow></a-cylinder>
-        <a-sphere position="1 1.5 -2" 
-                  radius="0.5" 
-                  color="#4CAF50" shadow></a-sphere>
+        <a-entity id="ciftlik-alani" visible="false" position="0 0 -2">
+            
+            <a-plane rotation="-90 0 0" width="3" height="3" color="#4CAF50" shadow></a-plane>
 
-        <a-plane position="0 0 -2" 
-                 rotation="-90 0 0" 
-                 width="4" height="4" 
-                 color="#7BC8A4" 
-                 opacity="0.5">
-        </a-plane>
+            <a-box position="-0.5 0.5 0" color="#D32F2F" scale="1 1 1" shadow></a-box>
+            
+            <a-entity position="-0.5 0 0.51"> <a-box class="clickable" 
+                       kapi-kontrol
+                       position="0.25 0.4 0" 
+                       scale="0.4 0.8 0.05" 
+                       color="#5D4037">
+                </a-box>
+            </a-entity>
+
+            <a-cylinder position="1 0.75 0" radius="0.1" height="1.5" color="#795548" shadow></a-cylinder>
+            <a-sphere position="1 1.5 0" radius="0.6" color="#388E3C" shadow></a-sphere>
+
+        </a-entity>
+
+        <a-entity ar-hit-test="target:#hedef-halkasi; type:map"></a-entity>
+        
+        <a-entity cursor="fuse: false; rayOrigin: mouse" raycaster="objects: .clickable"></a-entity>
 
     </a-scene>
+    
+    <div id="overlay"></div>
+
 </body>
-</html>
+            </html>
