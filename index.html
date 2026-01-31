@@ -3,49 +3,50 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AR Çiftlik V4</title>
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <title>AR Çiftlik V5</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
     <style>
-        /* 1. TÜM A-FRAME VR BUTONLARINI GİZLE */
+        /* A-Frame'in kendi VR butonlarını tamamen gizle */
         .a-enter-vr, .a-enter-vr-button, .a-orientation-modal {
             display: none !important;
         }
 
-        /* 2. ARAYÜZ KAPLAMASI (Tüm ekranı kaplar ama dokunmaya izin verir) */
+        /* Arayüz Kaplaması */
         #arayuz-kaplama {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 99999; /* Her şeyin üstünde */
+            z-index: 99999;
             display: flex;
-            justify-content: center; /* Yatay ortala */
-            align-items: center;     /* Dikey ortala */
-            pointer-events: none;    /* Dokunmaları alttaki sahneye geçir */
+            justify-content: center;
+            align-items: flex-start; /* Butonu biraz yukarı taşıyabiliriz veya ortada bırakabiliriz */
+            padding-top: 20px;
+            pointer-events: none; /* Dokunmayı arkaya geçir */
         }
 
-        /* 3. GERÇEK BUTON */
+        /* Bizim Pembe Buton */
         #baslat-butonu {
-            pointer-events: auto; /* Ama butona dokunulabilsin! */
-            padding: 15px 40px;
-            background-color: #ff4081;
+            pointer-events: auto; /* Sadece buna dokunulabilsin */
+            margin-top: 20px;     /* Üstten biraz boşluk */
+            padding: 15px 30px;
+            background-color: #ff4081; /* Pembe */
             color: white;
             border: 3px solid white;
             border-radius: 50px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             font-family: sans-serif;
             text-transform: uppercase;
             cursor: pointer;
-            transition: transform 0.1s;
         }
 
         #baslat-butonu:active {
-            transform: scale(0.95); /* Tıklayınca küçülme efekti */
-            background-color: #e91e63;
+            transform: scale(0.95);
+            background-color: #d81b60;
         }
     </style>
 </head>
@@ -57,67 +58,78 @@
     </div>
 
     <a-scene 
-        id="sahne"
-        webxr="optionalFeatures: hit-test, dom-overlay; overlayElement: #arayuz-kaplama"
+        webxr="requiredFeatures: hit-test, local-floor; optionalFeatures: dom-overlay; overlayElement: #arayuz-kaplama"
         vr-mode-ui="enabled: false"
-        renderer="alpha: true; antialias: true;"
-        ar-kontrol
+        ar-hit-test="target: #hedef-halkasi; type: map"
+        renderer="antialias: true; alpha: true; physicallyCorrectLights: true;"
         background="color: transparent">
 
-        <a-light type="directional" position="1 4 2" intensity="1.2"></a-light>
-        <a-light type="ambient" intensity="0.6"></a-light>
+        <a-light type="directional" position="1 4 2" intensity="1.5" color="#ffffff"></a-light>
+        <a-light type="ambient" intensity="0.8" color="#ffffff"></a-light>
 
-        <a-entity id="hedef-halkasi" ar-hit-test-target visible="false">
+        <a-entity id="hedef-halkasi" visible="false">
             <a-ring color="white" rotation="-90 0 0" radius-inner="0.1" radius-outer="0.15" opacity="0.8"></a-ring>
             <a-circle color="white" rotation="-90 0 0" radius="0.05" opacity="0.5"></a-circle>
         </a-entity>
 
-        <a-entity id="ciftlik-modeli" visible="false" position="0 0 -2">
-            <a-box position="0 -0.1 0" width="2" height="0.1" depth="2" color="#4CAF50"></a-box>
-            <a-box position="-0.5 0.5 0" color="#D32F2F" scale="0.8 1 0.8"></a-box>
-            <a-cone position="-0.5 1.2 0" radius-bottom="0.6" height="0.5" color="#5D4037"></a-cone>
-            <a-cylinder position="0.6 0.4 0.6" radius="0.1" height="0.8" color="#795548"></a-cylinder>
-            <a-dodecahedron position="0.6 1 0.6" radius="0.4" color="#388E3C"></a-dodecahedron>
+        <a-entity id="ciftlik-modeli" visible="false" position="0 0 -2" scale="0.5 0.5 0.5">
+            <a-box position="0 -0.05 0" width="3" height="0.1" depth="3" color="#7CB342"></a-box>
+            <a-box position="-0.8 0.5 -0.5" width="1" height="1" depth="1" color="#D32F2F"></a-box>
+            <a-cone position="-0.8 1.5 -0.5" radius-bottom="0.8" height="0.8" color="#5D4037"></a-cone>
+            <a-cylinder position="1 0.4 0.5" radius="0.1" height="0.8" color="#795548"></a-cylinder>
+            <a-dodecahedron position="1 1 0.5" radius="0.5" color="#2E7D32"></a-dodecahedron>
         </a-entity>
 
-        <a-entity ar-hit-test="target:#hedef-halkasi; type:map"></a-entity>
     </a-scene>
 
     <script>
-        // BUTON TIKLAMA OLAYI (JavaScript ile Bağlama)
+        // --- 1. BUTONA BASILINCA KAMERAYI ZORLA AÇMA ---
         document.getElementById('baslat-butonu').addEventListener('click', function() {
             var scene = document.querySelector('a-scene');
-            
-            // Kullanıcıya tepki ver
-            this.innerHTML = "YÜKLENİYOR...";
-            this.style.backgroundColor = "#9c27b0"; // Mor renk yap
+            var btn = this;
 
-            // AR Oturumunu Başlat
+            btn.innerText = "YÜKLENİYOR...";
+            btn.style.backgroundColor = "#9c27b0"; // Mor renk
+
+            // A-Frame'in VR moduna girmesini tetikle
+            // (Yukarıdaki 'webxr' ayarları sayesinde bu VR değil AR olarak açılacak)
             scene.enterVR();
 
-            // 1 saniye sonra butonu tamamen yok et
+            // Butonu gizle (veya arayüzü temizle)
             setTimeout(() => {
                 document.getElementById('arayuz-kaplama').style.display = 'none';
-            }, 1000);
+            }, 5000); // 5 saniye sonra butonu tamamen kaldır
         });
 
-        // AR YERLEŞTİRME MANTIĞI
-        AFRAME.registerComponent('ar-kontrol', {
-            init: function () {
-                this.reticle = document.querySelector("#hedef-halkasi");
-                this.farm = document.querySelector("#ciftlik-modeli");
-                this.placed = false;
+        // --- 2. MODELİ YERLEŞTİRME MANTIĞI ---
+        var scene = document.querySelector('a-scene');
+        var reticle = document.querySelector('#hedef-halkasi');
+        var farm = document.querySelector('#ciftlik-modeli');
+        var placed = false;
 
-                this.el.sceneEl.addEventListener('click', () => {
-                    if (this.placed) return;
-                    if (this.reticle.object3D.visible) {
-                        this.farm.setAttribute('position', this.reticle.getAttribute('position'));
-                        this.farm.setAttribute('rotation', this.reticle.getAttribute('rotation'));
-                        this.farm.setAttribute('visible', 'true');
-                        this.reticle.setAttribute('visible', 'false');
-                        this.placed = true;
-                    }
-                });
+        // "ar-hit-test-start" olayı: Zemin algılanmaya başladığında halkayı göster
+        scene.addEventListener('enter-vr', function () {
+            if (scene.is('ar-mode')) {
+                // AR Modundayız, her şey yolunda
+                reticle.setAttribute('visible', 'true');
+            }
+        });
+
+        // Ekrana tıklama olayı
+        scene.addEventListener('click', function () {
+            if (placed) return; // Zaten koyduysak tekrar koyma
+
+            // Eğer halka görünüyorsa (zemin bulunduysa)
+            if (reticle.object3D.visible) {
+                // Modeli halkanın yerine taşı
+                farm.setAttribute('position', reticle.getAttribute('position'));
+                farm.setAttribute('rotation', reticle.getAttribute('rotation'));
+                
+                // Modeli göster, halkayı gizle
+                farm.setAttribute('visible', 'true');
+                reticle.setAttribute('visible', 'false');
+                
+                placed = true;
             }
         });
     </script>
