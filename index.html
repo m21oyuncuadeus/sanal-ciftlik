@@ -3,92 +3,65 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AR Çiftlik V3</title>
+    <title>AR Çiftlik V4</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
     <style>
-        /* 1. VR BUTONUNU ZORLA GİZLEME (CSS İLE) */
+        /* 1. TÜM A-FRAME VR BUTONLARINI GİZLE */
         .a-enter-vr, .a-enter-vr-button, .a-orientation-modal {
-            display: none !important; /* Kesinlikle gösterme */
+            display: none !important;
         }
 
-        /* 2. BİZİM AR BUTONUMUZUN TASARIMI */
-        #baslat-butonu {
+        /* 2. ARAYÜZ KAPLAMASI (Tüm ekranı kaplar ama dokunmaya izin verir) */
+        #arayuz-kaplama {
             position: fixed;
-            bottom: 30px;         /* Aşağıdan 30px yukarıda */
-            left: 50%;
-            transform: translateX(-50%); /* Tam ortala */
-            width: 200px;         /* Genişlik sabit */
-            height: 50px;         /* Yükseklik sabit */
-            background-color: #ff4081; /* Canlı Pembe */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 99999; /* Her şeyin üstünde */
+            display: flex;
+            justify-content: center; /* Yatay ortala */
+            align-items: center;     /* Dikey ortala */
+            pointer-events: none;    /* Dokunmaları alttaki sahneye geçir */
+        }
+
+        /* 3. GERÇEK BUTON */
+        #baslat-butonu {
+            pointer-events: auto; /* Ama butona dokunulabilsin! */
+            padding: 15px 40px;
+            background-color: #ff4081;
             color: white;
-            border: 2px solid white;
-            border-radius: 25px;
-            font-size: 16px;
+            border: 3px solid white;
+            border-radius: 50px;
+            font-size: 20px;
             font-weight: bold;
-            z-index: 99999;       /* Her şeyin en üstünde */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            font-family: sans-serif;
+            text-transform: uppercase;
             cursor: pointer;
-            display: flex;        /* Yazıyı ortalamak için */
-            align-items: center;
-            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        #baslat-butonu:active {
+            transform: scale(0.95); /* Tıklayınca küçülme efekti */
+            background-color: #e91e63;
         }
     </style>
-
-    <script>
-        // AR YERLEŞTİRME MANTIĞI
-        AFRAME.registerComponent('ar-kontrol', {
-            init: function () {
-                this.reticle = document.querySelector("#hedef-halkasi");
-                this.farm = document.querySelector("#ciftlik-modeli");
-                this.placed = false;
-
-                // Sahneye tıklandığında (Butona değil, ekrana)
-                this.el.sceneEl.addEventListener('click', () => {
-                    if (this.placed) return; // Zaten koyduysak tekrar koyma
-
-                    // Eğer halka görünürse (zemin algılandıysa)
-                    if (this.reticle.object3D.visible) {
-                        // Çiftliği halkanın olduğu yere ışınla
-                        this.farm.setAttribute('position', this.reticle.getAttribute('position'));
-                        this.farm.setAttribute('rotation', this.reticle.getAttribute('rotation'));
-                        
-                        // Çiftliği görünür yap
-                        this.farm.setAttribute('visible', 'true');
-                        
-                        // Halkayı kalıcı olarak gizle
-                        this.reticle.setAttribute('visible', 'false');
-                        this.placed = true;
-                    }
-                });
-            }
-        });
-
-        // BUTONA BASINCA ÇALIŞACAK FONKSİYON
-        function kamerayiAc() {
-            var scene = document.querySelector('a-scene');
-            var btn = document.querySelector('#baslat-butonu');
-            
-            // WebXR AR oturumunu başlat
-            scene.enterVR(); 
-            
-            // Butonu artık gizle
-            btn.style.display = 'none';
-        }
-    </script>
 </head>
 
-<body style="margin: 0; overflow: hidden; background-color: transparent;">
+<body style="margin: 0; overflow: hidden;">
 
-    <div id="baslat-butonu" onclick="kamerayiAc()">
-        KAMERAYI AÇ 📷
+    <div id="arayuz-kaplama">
+        <button id="baslat-butonu">KAMERAYI AÇ 📷</button>
     </div>
 
     <a-scene 
-        ar-kontrol
-        webxr="optionalFeatures: hit-test, dom-overlay; overlayElement: #baslat-butonu"
+        id="sahne"
+        webxr="optionalFeatures: hit-test, dom-overlay; overlayElement: #arayuz-kaplama"
         vr-mode-ui="enabled: false"
         renderer="alpha: true; antialias: true;"
+        ar-kontrol
         background="color: transparent">
 
         <a-light type="directional" position="1 4 2" intensity="1.2"></a-light>
@@ -101,17 +74,52 @@
 
         <a-entity id="ciftlik-modeli" visible="false" position="0 0 -2">
             <a-box position="0 -0.1 0" width="2" height="0.1" depth="2" color="#4CAF50"></a-box>
-            
             <a-box position="-0.5 0.5 0" color="#D32F2F" scale="0.8 1 0.8"></a-box>
             <a-cone position="-0.5 1.2 0" radius-bottom="0.6" height="0.5" color="#5D4037"></a-cone>
-            
             <a-cylinder position="0.6 0.4 0.6" radius="0.1" height="0.8" color="#795548"></a-cylinder>
             <a-dodecahedron position="0.6 1 0.6" radius="0.4" color="#388E3C"></a-dodecahedron>
         </a-entity>
 
         <a-entity ar-hit-test="target:#hedef-halkasi; type:map"></a-entity>
-
     </a-scene>
 
+    <script>
+        // BUTON TIKLAMA OLAYI (JavaScript ile Bağlama)
+        document.getElementById('baslat-butonu').addEventListener('click', function() {
+            var scene = document.querySelector('a-scene');
+            
+            // Kullanıcıya tepki ver
+            this.innerHTML = "YÜKLENİYOR...";
+            this.style.backgroundColor = "#9c27b0"; // Mor renk yap
+
+            // AR Oturumunu Başlat
+            scene.enterVR();
+
+            // 1 saniye sonra butonu tamamen yok et
+            setTimeout(() => {
+                document.getElementById('arayuz-kaplama').style.display = 'none';
+            }, 1000);
+        });
+
+        // AR YERLEŞTİRME MANTIĞI
+        AFRAME.registerComponent('ar-kontrol', {
+            init: function () {
+                this.reticle = document.querySelector("#hedef-halkasi");
+                this.farm = document.querySelector("#ciftlik-modeli");
+                this.placed = false;
+
+                this.el.sceneEl.addEventListener('click', () => {
+                    if (this.placed) return;
+                    if (this.reticle.object3D.visible) {
+                        this.farm.setAttribute('position', this.reticle.getAttribute('position'));
+                        this.farm.setAttribute('rotation', this.reticle.getAttribute('rotation'));
+                        this.farm.setAttribute('visible', 'true');
+                        this.reticle.setAttribute('visible', 'false');
+                        this.placed = true;
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
