@@ -1,99 +1,106 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Sanal Çiftlik - Final</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sana Özel Bir Sürpriz!</title>
+<style>
+    /* SAYFA ARKA PLANI (Hediye Paketi Deseni) */
+    body {
+        margin: 0;
+        height: 100vh; /* Tüm ekranı kapla */
+        /* Kırmızı arka plan üzerine hafif koyu kırmızı çizgiler */
+        background-color: #d32f2f;
+        background-image: repeating-linear-gradient(
+            45deg,
+            #d32f2f,
+            #d32f2f 20px,
+            #c62828 20px,
+            #c62828 40px
+        );
+        display: flex;
+        justify-content: center; /* Yatay ortala */
+        align-items: center;     /* Dikey ortala */
+        /* El yazısı gibi şık bir font */
+        font-family: 'Brush Script MT', cursive, sans-serif; 
+        overflow: hidden; /* Kaydırma çubuklarını gizle */
+    }
+
+    /* ALTIN KURDELELER */
+    .ribbon-v { /* Dikey Kurdele */
+        position: absolute;
+        width: 50px;
+        height: 100%;
+        /* Altın sarısı parlak geçiş */
+        background: linear-gradient(to right, #ffd700, #ffeb3b, #ffd700);
+        box-shadow: 0 0 15px rgba(0,0,0,0.4); /* Gölge ver */
+    }
+    .ribbon-h { /* Yatay Kurdele */
+        position: absolute;
+        height: 50px;
+        width: 100%;
+        background: linear-gradient(to bottom, #ffd700, #ffeb3b, #ffd700);
+        box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    }
+
+    /* NOT KARTI TASARIMI */
+    .note-card {
+        position: relative;
+        z-index: 10; /* Kurdelelerin üstünde dursun */
+        background-color: #fffaf0; /* Krem rengi lüks kağıt */
+        width: 85%;          /* Ekranın %85'ini kaplasın */
+        max-width: 400px;    /* Ama çok da genişlemesin */
+        padding: 40px 30px;  /* İç boşluk */
+        border-radius: 15px; /* Köşeleri yuvarlat */
+        /* Kartın arkasına derin gölge ver */
+        box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        text-align: center;  /* Yazıları ortala */
+        border: 4px solid #ffd700; /* Altın kenarlık */
+        transform: rotate(-3deg); /* Hafif eğik dursun, havalı görünsün */
+    }
+
+    /* Kartın Başlığı (Örn: Sevgilim,) */
+    h1 {
+        color: #d32f2f; /* Kırmızı renk */
+        margin: 0 0 20px 0;
+        font-size: 3em; /* Büyük yazı */
+    }
+
+    /* Kartın İçeriği (Mesajın) */
+    p {
+        font-size: 1.8em; /* Okunaklı boyutta */
+        color: #444;      /* Koyu gri yazı */
+        line-height: 1.5; /* Satır aralığı */
+        margin: 0;
+    }
     
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    /* Kartın tepesindeki basit fiyonk süsü */
+    .bow-tie {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 50px;
+        background-color: #ffd700;
+        border-radius: 50%;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    }
 
-    <style>
-        body { margin: 0; background-color: #f0f0f0; font-family: sans-serif; }
-        
-        /* Model Gösterici */
-        model-viewer {
-            width: 100%;
-            height: 100vh; /* Tüm ekranı kapla */
-            background-color: #b2dfdb; /* Tatlı bir arka plan rengi */
-        }
-
-        /* Özel AR Butonu */
-        .ar-button {
-            background-color: white;
-            border-radius: 4px;
-            border: none;
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            padding: 10px 20px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-            color: #333;
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-        }
-
-        /* Yükleniyor Çubuğu */
-        .progress-bar {
-            display: block;
-            width: 33%;
-            height: 10%;
-            max-height: 2%;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate3d(-50%, -50%, 0);
-            border-radius: 25px;
-            box-shadow: 0px 3px 10px 3px rgba(0, 0, 0, 0.5), 0px 0px 5px 1px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .update-bar {
-            background-color: rgba(255, 255, 255, 0.9);
-            width: 0%;
-            height: 100%;
-            border-radius: 25px;
-            float: left;
-            transition: width 0.3s;
-        }
-    </style>
+</style>
 </head>
 <body>
 
-    <model-viewer 
-        src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" 
-        ar 
-        ar-modes="webxr scene-viewer quick-look" 
-        camera-controls 
-        auto-rotate
-        shadow-intensity="1">
+    <div class="ribbon-v"></div>
+    <div class="ribbon-h"></div>
 
-        <button slot="ar-button" class="ar-button">
-            👋 ODANA KOY (AR)
-        </button>
-
-        <div class="progress-bar" slot="progress-bar">
-            <div class="update-bar"></div>
+    <div class="note-card">
+        <div class="bow-tie"></div> <h1>Canım Aşkım,</h1>
+        
+        <p>
+            Sana olan sevgimi anlatmaya kelimeler yetmez ama bu küçük sanal notla yüzünü güldürmek istedim. İyi ki hayatımdasın! ❤️🎁
+        </p>
+        
         </div>
-
-    </model-viewer>
-
-    <script>
-        // Yükleme çubuğu animasyonu
-        const modelViewer = document.querySelector('model-viewer');
-        const progress = document.querySelector('.progress-bar');
-        const bar = document.querySelector('.update-bar');
-
-        modelViewer.addEventListener('progress', (event) => {
-            const {totalProgress} = event.detail;
-            const value = totalProgress * 100;
-            bar.style.width = value + '%';
-
-            if (value === 100) {
-                progress.style.display = 'none';
-            }
-        });
-    </script>
-</body>
+    </body>
 </html>
